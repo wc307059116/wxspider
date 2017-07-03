@@ -20,7 +20,7 @@ class dbforMysql(object):
         self.con_db()
         try:
             with self.dbCon.cursor() as cursor:
-                sql = 'INSERT INTO che (title,author,link,time) VALUES(%s,%s,%s,%s)'
+                sql = 'INSERT INTO CHE (title,author,link,time) VALUES(%s,%s,%s,%s)'
                 for comment in comments:
                     try:
                         time.strptime(comment['time'],"%H:%M")
@@ -35,7 +35,7 @@ class dbforMysql(object):
         self.con_db()
         try :
             with self.dbCon.cursor() as cursor:
-                sql = 'TRUNCATE TABLE che'
+                sql = 'TRUNCATE TABLE CHE'
                 cursor.execute(sql)
             self.dbCon.commit()
         finally :
@@ -45,7 +45,7 @@ class dbforMysql(object):
         self.con_db()      
         try :
             with self.dbCon.cursor() as cursor:
-                sql = 'SELECT * FROM che WHERE '+data
+                sql = 'SELECT * FROM CHE WHERE '+data
                 cursor.execute(sql)
                 result = cursor.fetchone()
             print(result)
@@ -60,12 +60,32 @@ class dbforMysql(object):
         self.con_db()
         try :
             with self.dbCon.cursor() as cursor:
-                sql = 'SELECT * FROM che '
+                sql = 'SELECT * FROM CHE '
                 cursor.execute(sql)
                 result = cursor.fetchall()
-            #print(result)
+            self.dbCon.commit()
+            return result
+        finally :
+            self.dbCon.close()
+
+    def select_weather(self):
+        self.con_db()
+        try :
+            with self.dbCon.cursor() as cursor:
+                sql = 'SELECT * FROM WEATHERS '
+                cursor.execute(sql)
+                result = cursor.fetchall()
             self.dbCon.commit()
             return result
         finally :
             self.dbCon.close()
             
+    def clear_weather(self):
+        self.con_db()
+        try :
+            with self.dbCon.cursor() as cursor:
+                sql = 'TRUNCATE TABLE WEATHERS'
+                cursor.execute(sql)
+            self.dbCon.commit()
+        finally :
+            self.dbCon.close()

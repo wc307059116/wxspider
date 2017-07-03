@@ -3,6 +3,7 @@ import logging
 import os
 import sys
 import re
+import subprocess
 
 rootpath=os.getcwd()
 syspath=sys.path
@@ -17,6 +18,7 @@ from chespider.tieba import get_detail,start_spider
 
 logging.basicConfig(level=logging.DEBUG)
 getAll = ['all','所有数据']
+weacherKey = ['天气']
 global bot
 
 def new_message(core, msg):
@@ -51,10 +53,10 @@ def start_bot():
         deleting_member=deleting_member,
     ))
 
-def sendFile(username,filenema):
+def sendText(username,text):
     global msgBot
     searchFriend = bot.friends.search(username)[0]
-    searchFriend.send_file(filenema)
+    searchFriend.send(text)
 
 def getName(strr,sub = '查询：'):
     selRsl = re.search(sub,strr)
@@ -63,6 +65,7 @@ def getName(strr,sub = '查询：'):
     else :
         return True
 
+#example：详细：要爬取的URL
 def getDetail(strr,sub = '详细：'):
     selRsl = re.search(sub,strr)
     if not selRsl :
@@ -70,6 +73,7 @@ def getDetail(strr,sub = '详细：'):
     else :
         return True
 
+#example：爬取：切尔西
 def getTieba(strr,sub = '爬取：'):
     selRsl = re.search(sub,strr)
     if not selRsl :
@@ -108,6 +112,16 @@ def register_friend():
                         for imgName in rslImg:
                             rcvMsg.reply_image(imgName)
                             os.remove(imgName)
+                elif rcvMsg.text in weacherKey:
+                    os.chdir('weather')
+                    db = dbforMysql()
+                    db.clear_weather()
+                    subprocess.Popen('scrapy crawl NNtianqi').wait()
+                    result = db.select_weather()
+                    for comment in result:
+                        msgStr = ('{}\n{}\n{}\n{}\n{}\n'.format(comment['date'],comment['week'],comment['temperature'],comment['weather'],comment['wind']))
+                        rcvMsg.reply(msgStr)
+                        #sendText(rcvMsg.sender.name,msgStr)
                 else:
                     return rcvMsg.text
 
