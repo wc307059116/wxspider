@@ -2,6 +2,7 @@ import requests,time
 from bs4 import BeautifulSoup
 import os
 import sys
+import  requests 
 
 #添加python包搜索路径
 rootpath=os.path.dirname(os.getcwd())
@@ -15,7 +16,7 @@ sys.path.extend(syspath)
 from chedb.wxdb import dbforMysql
 
 
-base_url = 'https://tieba.baidu.com/f?kw=切尔西&ie=utf-8'
+#base_url = 'https://tieba.baidu.com/f?kw=切尔西&ie=utf-8'
 deep =3 
 
 def get_html(url):
@@ -54,6 +55,26 @@ def get_content(url):
             print('error')
     return comments
 
+def get_detail(url):
+    comments=[]
+    html = get_html('http:'+url)
+    soup = BeautifulSoup(html,'lxml')
+    liTags = soup.find('div',attrs={'class': 'd_post_content j_d_post_content '})
+    urlText = liTags.text.strip()
+    imgUrls = liTags.find_all('img')
+    tmpFile = 0
+    imgFile = []
+    for imgUrl in imgUrls:
+        print(imgUrl["src"])
+        imgTmp = requests.get(imgUrl["src"])
+        fileName = str(tmpFile)+'.jpg'
+        with open(fileName,'ab') as tmp:
+            tmp.write(imgTmp.content)
+            tmp.close()
+            imgFile.append(fileName)
+    return urlText,imgFile
+
+
 def run_spider(base_url, deep):
     urlList = []
     for i in range(0, deep):
@@ -67,10 +88,11 @@ def run_spider(base_url, deep):
         db.insert_db(content)    
     print('所有的信息都已经保存完毕！')
     return '所有的信息都已经保存完毕！'
-    #db.select_db('time = \'15\:05\'')
     
-def start_spider():
+def start_spider(tagName):
+    base_url = 'https://tieba.baidu.com/f?kw={}&ie=utf-8'.format(tagName)
     return run_spider(base_url, deep)
 
 if __name__ == '__main__':
-    run_spider(base_url, deep)
+    get_detail('//tieba.baidu.com/p/5195292884')
+    #run_spider(base_url, deep)
